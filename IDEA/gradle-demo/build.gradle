@@ -1,0 +1,100 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.4.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+//apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: "jacoco"
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-data-mongodb')
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('com.google.code.gson:gson:2.3.1')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+jar {
+    String someString = ''
+    configurations.runtime.each {someString = someString + " lib//"+it.name}
+    manifest {
+        attributes 'Main-Class': 'com.ximenzi.adaptercfg.AdaptercfgApplication'
+        attributes 'Class-Path': someString
+    }
+}
+
+
+task clearPj(type:Delete){
+    delete 'build','target'
+}
+task copyJar(type:Copy){
+    from configurations.runtime
+    into ('build/libs/lib')
+}
+def input='/build/libs'
+def inputfile='source-'+version+'.jar'
+def srcJar=input+'/'+inputfile
+def output='../release'
+
+task release(type: Copy,dependsOn: [build,copyJar]) {
+//	def input='/build/libs'
+//	def inputfile='source-'+version+'.jar'
+//	def srcJar=input+'/'+inputfile
+
+//	def output='../release'
+
+    from  srcJar
+    into (output)
+}
+
+task makepackage(type: Copy, dependsOn: release) {
+    from output
+    into output
+    rename {
+        String fileName -> fileName.replace('source-', 'adapterconfigure-')
+    }
+
+    doLast {
+        println(output + '/' + inputfile )
+        delete output + '/' + inputfile
+    }
+}
+group 'jetbrain'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

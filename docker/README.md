@@ -6,6 +6,7 @@
 ## 安装
 ### 基于centos/redhat
 
+### 基于windows
 
 ## 基本操作
 ### 镜像管理
